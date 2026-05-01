@@ -1,0 +1,64 @@
+# Brev-flavored compose — same image, but with port labels and Jupyter included
+# so the Brev console wires the "Open Notebook" button and exposes the right URLs.
+#
+# Brev port-naming convention:
+#   - 8888  → "jupyter" (gives you the Open Notebook button)
+#   - all other named ports surface as click-through links in the deployment view
+#
+# Reference:
+#   https://docs.nvidia.com/brev/concepts/launchables (NVIDIA Brev Launchable docs)
+
+services:
+  kronos:
+    image: kronos-nvidia:latest
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    env_file:
+      - ../.env
+    environment:
+      KRONOS_DEVICE: "cuda:0"
+      HF_HOME: /opt/hf_cache
+      JUPYTER_ENABLE_LAB: "yes"
+    # Brev requires that ports be declared by NAME for the UI to surface them.
+    ports:
+      - target: 8888
+        published: 8888
+        protocol: tcp
+        mode: host
+        # name: jupyter  ← in newer compose specs use `x-brev: { name: jupyter }`
+      - target: 7070
+        published: 7070
+      - target: 8000
+        published: 8000
+    labels:
+      brev.port.8888: "jupyter"
+      brev.port.7070: "webui"
+      brev.port.8000: "api"
+    volumes:
+      - hf_cache:/opt/hf_cache
+      - /home/ubuntu:/workspace  # Brev's default workspace path
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    ipc: host
+    shm_size: "8gb"
+    # Boot order: download models in the background, start the API, start Jupyter,
+    # finally hand off to the webui. The Brev "Open Notebook" / "Open URL" buttons
+    # appear when each port returns 200.
+    command: >
+      bash -lc "
+      python /app/scripts/02_download_models.py >/tmp/dl.log 2>&1 &
+      uvicorn nvidia.api_server:app --host 0.0.0.0 --port 8000 >/tmp/api.log 2>&1 &
+      jupyter lab --ip=0.0.0.0 --port=8888 --allow-root --no-browser \
+        --NotebookApp.token='' --NotebookApp.password='' \
+        --notebook-dir=/workspace >/tmp/jupyter.log 2>&1 &
+      cd /app/upstream/webui && python run.py
+      "
+
+volumes:
+  hf_cache: {}

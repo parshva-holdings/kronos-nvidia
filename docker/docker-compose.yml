@@ -1,0 +1,44 @@
+# Local NVIDIA host: requires Docker Engine + NVIDIA Container Toolkit
+#   https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html
+#
+#   docker login nvcr.io --username '$oauthtoken' --password "$NGC_API_KEY"
+#   docker compose -f docker/docker-compose.yml up
+
+services:
+  kronos:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: kronos-nvidia:latest
+    container_name: kronos-nvidia
+    env_file:
+      - ../.env
+    environment:
+      KRONOS_DEVICE: "cuda:0"
+      HF_HOME: /opt/hf_cache
+    ports:
+      - "7070:7070"   # Flask webui
+      - "8000:8000"   # FastAPI gateway
+    volumes:
+      - hf_cache:/opt/hf_cache
+      - ../outputs:/app/outputs
+      - ../checkpoints:/app/checkpoints
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    ipc: host
+    shm_size: "8gb"
+    restart: unless-stopped
+    # Two-process startup (webui + API)
+    command: >
+      bash -lc "
+      uvicorn nvidia.api_server:app --host 0.0.0.0 --port 8000 >/tmp/api.log 2>&1 &
+      cd /app/upstream/webui && python run.py
+      "
+
+volumes:
+  hf_cache: {}

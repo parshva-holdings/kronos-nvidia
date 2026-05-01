@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+# Only the FastAPI gateway is a real Python package; everything else
+# (scripts, docker, data, upstream) is auxiliary content.
+packages = ["nvidia"]
+
+[project]
+name = "kronos-nvidia-kit"
+version = "0.1.0"
+description = "NVIDIA deployment kit for the Kronos financial foundation model"
+requires-python = ">=3.10"
+
+dependencies = [
+    # Core Kronos requirements (mirrors upstream requirements.txt, with looser pins
+    # so the kit also works on Apple Silicon for dev)
+    "numpy>=1.26",
+    "pandas>=2.0",
+    "torch>=2.1",
+    "einops>=0.8",
+    "huggingface_hub>=0.33",
+    "matplotlib>=3.9",
+    "tqdm>=4.66",
+    "safetensors>=0.6",
+
+    # Web UI dependencies (mirrors webui/requirements.txt)
+    "flask>=2.3",
+    "flask-cors>=4.0",
+    "plotly>=5.17",
+
+    # Our FastAPI gateway
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "pydantic>=2.8",
+    "python-dotenv>=1.0",
+    "httpx>=0.27",
+]
+
+[project.optional-dependencies]
+finetune = [
+    "pyqlib>=0.9",
+    "comet-ml>=3.40",
+]
+india = [
+    # Yahoo Finance data for Nifty 50 / NSE / BSE symbols
+    "yfinance>=0.2.40",
+]
+dev = [
+    "ruff>=0.6",
+    "pytest>=8.0",
+]

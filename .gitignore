@@ -1,0 +1,52 @@
+# Environment
+.env
+.env.local
+*.env
+!env.example
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Upstream Kronos source — cloned by bootstrap, not committed
+upstream/
+
+# HF / model caches
+.cache/
+hf_cache/
+nim_cache/
+
+# Data and outputs — exclude all market data, keep only the fetcher scripts
+data/**/*.csv
+data/**/*.feather
+data/**/*.parquet
+data/**/*.pkl
+data/**/*.json
+data/nifty50/
+!data/generate_sample.py
+!data/fetch_nifty50.py
+!data/.gitkeep
+outputs/
+checkpoints/
+*.ckpt
+*.pt
+*.safetensors
+
+# Triton
+nvidia/triton/model_repository/*/.pbtxt.bak
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp

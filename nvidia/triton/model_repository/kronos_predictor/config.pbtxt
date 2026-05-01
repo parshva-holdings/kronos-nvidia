@@ -1,0 +1,74 @@
+name: "kronos_predictor"
+backend: "python"
+
+# We disable Triton's internal batcher (max_batch_size = 0) because the bars-per-request
+# dimension varies across requests. Concurrency is achieved via instance replicas + the
+# Python backend handling concurrent execute() calls.
+max_batch_size: 0
+
+input [
+  {
+    name: "bars"
+    data_type: TYPE_FP32
+    dims: [ -1, 6 ]   # [lookback, OHLCVA]
+  },
+  {
+    name: "x_ts"
+    data_type: TYPE_INT64
+    dims: [ -1 ]      # epoch-seconds for each historical bar
+  },
+  {
+    name: "horizon"
+    data_type: TYPE_INT32
+    dims: [ 1 ]
+  },
+  {
+    name: "T"
+    data_type: TYPE_FP32
+    dims: [ 1 ]
+    optional: true
+  },
+  {
+    name: "top_p"
+    data_type: TYPE_FP32
+    dims: [ 1 ]
+    optional: true
+  },
+  {
+    name: "samples"
+    data_type: TYPE_INT32
+    dims: [ 1 ]
+    optional: true
+  }
+]
+
+output [
+  {
+    name: "forecast"
+    data_type: TYPE_FP32
+    dims: [ -1, 6 ]   # [horizon, OHLCVA]
+  },
+  {
+    name: "y_ts"
+    data_type: TYPE_INT64
+    dims: [ -1 ]      # epoch-seconds for each forecasted bar
+  }
+]
+
+# One instance per visible GPU. Bump `count` to run multiple replicas per GPU
+# once you've measured VRAM headroom (Kronos-small fits 4-8x on an L40S).
+instance_group [
+  {
+    count: 1
+    kind: KIND_GPU
+  }
+]
+
+# Surface the model + tokenizer + device through env vars so ops can reconfigure
+# without editing this file. These get read by 1/model.py at initialize().
+parameters [
+  {
+    key: "EXECUTION_ENV_PATH"
+    value: { string_value: "" }
+  }
+]
