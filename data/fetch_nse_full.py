@@ -34,19 +34,26 @@ from pathlib import Path
 NIFTY50_INDEX = "^NSEI"
 
 INDICES = {
-    "^NSEI":     "Nifty 50",
-    "^CNXNSE100":"Nifty 100",
-    "^NSEBANK":  "Bank Nifty",
-    "^CNXIT":    "Nifty IT",
-    "^CNXAUTO":  "Nifty Auto",
-    "^CNXPHARMA":"Nifty Pharma",
-    "^CNXFMCG":  "Nifty FMCG",
-    "^CNXMETAL": "Nifty Metal",
-    "^CNXREALTY":"Nifty Realty",
-    "^CNXENERGY":"Nifty Energy",
-    "^CNX500":   "Nifty 500",
-    "^CRSLDX":   "Nifty Midcap 100",
-    "^NSMIDCP":  "Nifty Midcap 50",
+    # Verified working as of 2026-05-01. Yahoo retired ^CNXNSE100 and ^CNX500;
+    # ^CNX100 is the live Nifty 100 alias. Nifty 500 has no working Yahoo
+    # ticker, so we pick up that breadth via the 100+ individual stocks below.
+    "^NSEI":       "Nifty 50",
+    "^CNX100":     "Nifty 100",
+    "^NSEBANK":    "Bank Nifty",
+    "^CNXIT":      "Nifty IT",
+    "^CNXAUTO":    "Nifty Auto",
+    "^CNXPHARMA":  "Nifty Pharma",
+    "^CNXFMCG":    "Nifty FMCG",
+    "^CNXMETAL":   "Nifty Metal",
+    "^CNXREALTY":  "Nifty Realty",
+    "^CNXENERGY":  "Nifty Energy",
+    "^CNXFIN":     "Nifty Financial Services",
+    "^CNXCMDT":    "Nifty Commodities",
+    "^CNXMNC":     "Nifty MNC",
+    "^CNXSERVICE": "Nifty Services",
+    "^CRSLDX":     "Nifty Midcap 100",
+    "^CRSMID":     "Nifty Midcap 150",
+    "^NSMIDCP":    "Nifty Midcap 50",
 }
 
 NIFTY50 = [
