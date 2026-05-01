@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 # Brev VM-Mode setup script. Runs once after Brev provisions the VM and clones
 # this repo. Bootstraps the kit, pre-fetches model weights, and brings up:
 #   - Streamlit dashboard on :8501
@@ -9,6 +9,9 @@
 #
 # Usage in Brev wizard (Step 2 — "Do you want to run a setup script?"):
 #   Paste Script tab → paste the contents of THIS file verbatim.
+#
+# NOTE: Brev's wizard validates that the shebang is exactly "#!/bin/bash"
+# — `#!/usr/bin/env bash` will be rejected, even though both work at runtime.
 set -euo pipefail
 exec > >(tee -a /var/log/kronos_setup.log) 2>&1
 
