@@ -25,10 +25,11 @@ dependencies = [
     "tqdm>=4.66",
     "safetensors>=0.6",
 
-    # Web UI dependencies (mirrors webui/requirements.txt)
-    "flask>=2.3",
-    "flask-cors>=4.0",
+    # Web UI dependencies — Streamlit dashboard (auto-fetching, no CSV uploads)
+    "streamlit>=1.40",
     "plotly>=5.17",
+    # Live market data (Indian markets via Yahoo)
+    "yfinance>=0.2.40",
 
     # Our FastAPI gateway
     "fastapi>=0.115",
@@ -44,7 +45,7 @@ finetune = [
     "comet-ml>=3.40",
 ]
 india = [
-    # Yahoo Finance data for Nifty 50 / NSE / BSE symbols
+    # Already in main deps now; kept for backwards-compat with `pip install -e '.[india]'`
     "yfinance>=0.2.40",
 ]
 dev = [

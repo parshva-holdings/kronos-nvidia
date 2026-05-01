@@ -17,7 +17,7 @@ services:
       KRONOS_DEVICE: "cuda:0"
       HF_HOME: /opt/hf_cache
     ports:
-      - "7070:7070"   # Flask webui
+      - "8501:8501"   # Streamlit dashboard
       - "8000:8000"   # FastAPI gateway
     volumes:
       - hf_cache:/opt/hf_cache
@@ -33,11 +33,10 @@ services:
     ipc: host
     shm_size: "8gb"
     restart: unless-stopped
-    # Two-process startup (webui + API)
     command: >
       bash -lc "
       uvicorn nvidia.api_server:app --host 0.0.0.0 --port 8000 >/tmp/api.log 2>&1 &
-      cd /app/upstream/webui && python run.py
+      streamlit run /app/webui_streamlit/app.py --server.port 8501 --server.address 0.0.0.0 --server.headless true --browser.gatherUsageStats false
       "
 
 volumes:

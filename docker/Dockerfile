@@ -32,9 +32,10 @@ RUN pip install --no-cache-dir \
     huggingface_hub>=0.33 \
     safetensors>=0.6 \
     tqdm>=4.66 \
-    flask>=2.3 flask-cors>=4.0 plotly>=5.17 \
+    streamlit>=1.40 plotly>=5.17 yfinance>=0.2.40 \
     fastapi>=0.115 'uvicorn[standard]>=0.32' \
-    pydantic>=2.8 python-dotenv>=1.0
+    pydantic>=2.8 python-dotenv>=1.0 \
+    jupyterlab>=4.0
 
 # Copy our gateway, scripts, and configs (after pip install for cache friendliness).
 COPY nvidia /app/nvidia
@@ -43,16 +44,18 @@ COPY data /app/data
 COPY README.md /app/README.md
 COPY env.example /app/env.example
 
+# Add the Streamlit UI source
+COPY webui_streamlit /app/webui_streamlit
+
 # Pre-create cache dirs (Brev volume-mounts these for warm starts)
 RUN mkdir -p /opt/hf_cache /app/outputs /app/checkpoints \
     && chmod +x /app/scripts/*.sh
 
-# Expose: 7070 Flask webui, 8000 FastAPI gateway, 8888 Jupyter (if launched).
-EXPOSE 7070 8000 8888
+# Expose: 8501 Streamlit dashboard, 8000 FastAPI gateway, 8888 Jupyter
+EXPOSE 8501 8000 8888
 
-# Default: run both the webui and the gateway via a tiny supervisord-style shim.
-# Override CMD to launch only one (or jupyter, or finetune).
+# Default: run gateway + Streamlit. Override CMD to launch a single service or finetune.
 CMD ["bash", "-lc", "\
-  python /app/nvidia/api_server.py >/tmp/api.log 2>&1 & \
-  cd /app/upstream/webui && python run.py \
+  uvicorn nvidia.api_server:app --host 0.0.0.0 --port 8000 >/tmp/api.log 2>&1 & \
+  exec streamlit run /app/webui_streamlit/app.py --server.port 8501 --server.address 0.0.0.0 --server.headless true --browser.gatherUsageStats false \
 "]
